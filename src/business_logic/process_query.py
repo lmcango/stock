@@ -16,11 +16,14 @@ def create_business_logic():
 class BusinessLogic:
 
     def __init__(self, model_creator):
-        self._root_bucket = 'model_bucket_ycng_228'
+        self._root_bucket = 'ango-hw-bucket'
         self._config = configparser.ConfigParser()
         self._config.read('application.conf')
         self._model_creator = model_creator
+        print("avant created bucket\n")
         self._create_bucket()
+        print("apres created bucket\n")
+
 
     def get_version(self):
         return self._config['DEFAULT']['version']
