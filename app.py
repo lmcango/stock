@@ -10,7 +10,7 @@ def hello():
     return f'Hello I think you should use an other route:!\nEX: get_stock_val/<ticker>\n'
 
 
-@app.route('/get_stock_val/<ticker>', methods=['GET'])
+@app.route('/get_pred/<ticker>', methods=['GET'])
 def get_stock_value(ticker):
     bl = create_business_logic()
     prediction = bl.do_predictions_for(ticker)
@@ -24,6 +24,12 @@ def perf(ticker):
 
     return f'{perf}\n'
 
+@app.route('/retrain/<ticker>', methods=['GET'])
+def retrain(ticker):
+    bl = create_business_logic()
+    perf = bl.do_retrain(ticker)
+
+    return f'{ticker} has been retrained: perf = {perf}\n'
 
 if __name__ == '__main__':
     # Used when running locally only. When deploying to Cloud Run,
