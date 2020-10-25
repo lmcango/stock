@@ -21,7 +21,7 @@ class BusinessLogic:
         self._config.read('application.conf')
         self._model_creator = model_creator
         print("avant created bucket\n")
-        self._create_bucket()
+        #self._create_bucket()
         print("apres created bucket\n")
 
 
@@ -53,3 +53,8 @@ class BusinessLogic:
         model = self._get_or_create_model(ticker)
         predictions = model.predict(ticker)
         return predictions
+
+    def do_analyse_perf(self, ticker):
+        model = self._get_or_create_model(ticker)
+        perf = model.analyse_perf(ticker)
+        return perf
