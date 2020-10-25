@@ -42,5 +42,38 @@ class Stock_model(BaseEstimator, TransformerMixin):
         df_features = create_features(data)
         df_features, Y = create_X_Y(df_features)
         predictions = self.lr.predict(df_features)
+        self.analyse(X)
+        if (predictions.flatten()[-1] >= predictions.flatten()[-2]):
+            return "BUY (today: %f, tomorrow : %f)" % (predictions.flatten()[-2], predictions.flatten()[-1])
+        else:
+            return "SELL (today: %f, tomorrow : %f)" % (predictions.flatten()[-2], predictions.flatten()[-1])
 
-        return predictions.flatten()[-1]
+    def analyse_perf(self, ticker):
+        data = self._data_fetcher(ticker, last=True)
+        df_features = create_features(data)
+        df_features, Y = create_X_Y(df_features)
+        predictions = self.lr.predict(df_features)
+        TP = 0  # BUY
+        P = 0
+        TN = 0  # SELL
+        N = 0
+        nb_pred = 0
+        BA = 'NaN'
+        np_Y = Y.values
+        predictions = predictions.flatten()
+        for i in range(np_Y.size-1):
+            if (np_Y[i + 1] > np_Y[i] and predictions[i + 1] > np_Y[i]):
+                TP = TP + 1
+            elif (np_Y[i + 1] < np_Y[i] and predictions[i + 1] < np_Y[i]):
+                TN = TN + 1
+
+            if (np_Y[i + 1] > np_Y[i]):
+                P = P + 1
+            elif (np_Y[i + 1] < np_Y[i]):
+                N = N + 1
+
+        if (P + N == 0):
+            print("NOT ENOUGH DATA\n")
+        else:
+            BA = (TP / P + TN / N) / 2
+        return "BA = %f" % (BA)
