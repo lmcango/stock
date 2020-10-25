@@ -4,7 +4,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.linear_model import LinearRegression
 
 
-def create_features(df_stock, nlags=10):
+def create_features(df_stock, nlags=10, addTomorrow=False):
     df_resampled = df_stock.resample('1D').mean()
     df_resampled = df_resampled[df_resampled.index.to_series().apply(lambda x: x.weekday() not in [5, 6])]
     lags_col_names = []
@@ -13,6 +13,12 @@ def create_features(df_stock, nlags=10):
         lags_col_names.append('lags_' + str(i))
     df = df_resampled[lags_col_names]
     df = df.dropna(axis=0)
+
+    if addTomorrow:
+        df_last_row = df.tail(1)
+        df_last_row = df_last_row.shift(periods=1, axis="columns")
+        df = df.append(df_last_row)
+
     return df
 
 
@@ -39,13 +45,20 @@ class Stock_model(BaseEstimator, TransformerMixin):
 
     def predict(self, X, Y=None):
         data = self._data_fetcher(X, last=True)
-        df_features = create_features(data)
+        df_features = create_features(data, addTomorrow=True)
         df_features, Y = create_X_Y(df_features)
         predictions = self.lr.predict(df_features)
-        if (predictions.flatten()[-1] >= predictions.flatten()[-2]):
-            return "BUY (today: %f, tomorrow : %f)" % (predictions.flatten()[-2], predictions.flatten()[-1])
+        #print(Y)
+        #print("\n")
+        #print(predictions)
+        #print("\n")
+        if (predictions.flatten()[-1] > Y.values[-2]):
+            return "BUY (today: %f, tomorrow: %f)" % (Y.values[-2], predictions.flatten()[-1])
+        elif (predictions.flatten()[-1] < Y.values[-2]):
+            return "SELL (today: %f, tomorrow: %f)" % (Y.values[-2], predictions.flatten()[-1])
         else:
-            return "SELL (today: %f, tomorrow : %f)" % (predictions.flatten()[-2], predictions.flatten()[-1])
+            return "NO ACTION (today: %f, tomorrow: %f)" % (Y.values[-2], predictions.flatten()[-1])
+
 
     def analyse_perf(self, ticker):
         data = self._data_fetcher(ticker, last=True)
@@ -60,6 +73,9 @@ class Stock_model(BaseEstimator, TransformerMixin):
         BA = 'NaN'
         np_Y = Y.values
         predictions = predictions.flatten()
+        #print(np_Y)
+        #print("\n")
+        #print(predictions)
         for i in range(np_Y.size-1):
             if (np_Y[i + 1] > np_Y[i] and predictions[i + 1] > np_Y[i]):
                 TP = TP + 1
