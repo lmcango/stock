@@ -17,6 +17,13 @@ def get_stock_value(ticker):
 
     return f'{prediction}\n'
 
+@app.route('/perf/<ticker>', methods=['GET'])
+def perf(ticker):
+    bl = create_business_logic()
+    perf = bl.do_analyse_perf(ticker)
+
+    return f'{perf}\n'
+
 
 if __name__ == '__main__':
     # Used when running locally only. When deploying to Cloud Run,
