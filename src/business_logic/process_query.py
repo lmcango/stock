@@ -4,7 +4,7 @@ import logging
 import joblib
 
 from src.IO.get_data_from_yahoo import get_last_stock_price
-from src.IO.storage_tools import create_bucket, get_model_from_bucket, upload_file_to_bucket
+from src.IO.storage_tools import create_bucket, get_model_from_bucket, upload_file_to_bucket, delete_model
 from src.algo.dummy_model import Stock_model
 
 
@@ -20,9 +20,7 @@ class BusinessLogic:
         self._config = configparser.ConfigParser()
         self._config.read('application.conf')
         self._model_creator = model_creator
-        print("avant created bucket\n")
-        #self._create_bucket()
-        print("apres created bucket\n")
+        self._create_bucket()
 
 
     def get_version(self):
@@ -43,6 +41,12 @@ class BusinessLogic:
             upload_file_to_bucket(model_filename, self.get_bucket_name())
         return model
 
+    def _delete_model(self, ticker):
+        model_filename = self.get_model_filename_from_ticker(ticker)
+        if get_model_from_bucket(model_filename, self.get_bucket_name()) is not None:
+            delete_model(ticker, self.get_bucket_name())
+        return
+
     def get_model_filename_from_ticker(self, ticker):
         return f'{ticker}.pkl'
 
@@ -55,6 +59,12 @@ class BusinessLogic:
         return predictions
 
     def do_analyse_perf(self, ticker):
+        model = self._get_or_create_model(ticker)
+        perf = model.analyse_perf(ticker)
+        return perf
+
+    def do_retrain(self, ticker):
+        delete_model(ticker)
         model = self._get_or_create_model(ticker)
         perf = model.analyse_perf(ticker)
         return perf
