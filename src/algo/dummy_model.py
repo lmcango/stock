@@ -48,7 +48,6 @@ class Stock_model(BaseEstimator, TransformerMixin):
     def fit(self, X, Y=None):
 
         data = self._data_fetcher(X)
-        data.to_csv(X+".csv")
         train_data = data.head(int(0.95 * data.shape[0]))
         test_data = data.tail(int(0.05 * data.shape[0])+1)
 
