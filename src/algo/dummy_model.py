@@ -48,8 +48,8 @@ class Stock_model(BaseEstimator, TransformerMixin):
     def fit(self, X, Y=None):
 
         data = self._data_fetcher(X)
-        train_data = data.head(int(0.95 * data.shape[0]))
-        test_data = data.tail(int(0.05 * data.shape[0])+1)
+        train_data = data.head(int(0.80 * data.shape[0]))
+        test_data = data.tail(int(0.20 * data.shape[0])+1)
 
         train_features = create_features(train_data)
         train_features, train_Y = create_X_Y(train_features)
@@ -68,6 +68,7 @@ class Stock_model(BaseEstimator, TransformerMixin):
         #train_features = train_features.to_numpy()
         #X_train = polynom.fit_transform(train_features)
 
+
         self.lr.fit(train_features, train_Y)
         #self.lr.fit(X_train, train_Y)
 
@@ -77,6 +78,9 @@ class Stock_model(BaseEstimator, TransformerMixin):
         #test_features = test_features.to_numpy()
         #X_test = polynom.fit_transform(test_features)
 
+        if (test_features.shape[0] == 0):
+            print("BA = N/A")
+            return self
         predictions = self.lr.predict(test_features)
         #predictions = self.lr.predict(X_test)
 
@@ -100,11 +104,13 @@ class Stock_model(BaseEstimator, TransformerMixin):
 
         if (P + N == 0):
             print("NOT ENOUGH DATA\n")
+        elif (P == 0):
+            BA = (TN / N) / 2
+        elif (N == 0):
+            BA = (TP / P) / 2
         else:
             BA = (TP / P + TN / N) / 2
-        print("***********")
-        print("BA = ", BA)
-        print("***********")
+        print("*** ", X, ", BA = ", BA)
 
         return self
 
@@ -149,12 +155,14 @@ class Stock_model(BaseEstimator, TransformerMixin):
         df_features, Y = create_X_Y(df_features)
         predictions = self.lr.predict(df_features)
 
-        if (predictions.flatten()[-1] > Y.values[-2]):
-            return "BUY (today: %f, tomorrow: %f)" % (Y.values[-2], predictions.flatten()[-1])
+        if (predictions.flatten()[-1] >= Y.values[-2]):
+            return "BUY"
+            #return "BUY (today: %f, tomorrow: %f)" % (Y.values[-2], predictions.flatten()[-1])
         elif (predictions.flatten()[-1] < Y.values[-2]):
-            return "SELL (today: %f, tomorrow: %f)" % (Y.values[-2], predictions.flatten()[-1])
-        else:
-            return "NO ACTION (today: %f, tomorrow: %f)" % (Y.values[-2], predictions.flatten()[-1])
+            return "SELL"
+            #return "SELL (today: %f, tomorrow: %f)" % (Y.values[-2], predictions.flatten()[-1])
+        #else:
+            #return "NO ACTION (today: %f, tomorrow: %f)" % (Y.values[-2], predictions.flatten()[-1])
 
 
     def analyse_perf(self, ticker):
