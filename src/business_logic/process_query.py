@@ -3,7 +3,7 @@ import logging
 
 import joblib
 
-from src.IO.get_data_from_yahoo import get_last_stock_price
+from src.IO.get_data_from_yahoo import get_last_stock_price, get_all_tickers
 from src.IO.storage_tools import create_bucket, get_model_from_bucket, upload_file_to_bucket, delete_model
 from src.algo.dummy_model import Stock_model
 
@@ -25,6 +25,16 @@ class BusinessLogic:
 
     def get_version(self):
         return self._config['DEFAULT']['version']
+
+    def get_all_tickers(self):
+        return get_all_tickers()
+
+    def train_alltickers(self):
+        tickers = get_all_tickers()
+        for ticker in tickers:
+            print("training ", ticker)
+            if (ticker != "BF.B" and ticker != "BRK.B"):
+                self.do_retrain(ticker)
 
     def get_bucket_name(self):
         return f'{self._root_bucket}_{self.get_version().replace(".", "")}'
@@ -54,6 +64,8 @@ class BusinessLogic:
         create_bucket(self.get_bucket_name())
 
     def do_predictions_for(self, ticker):
+        if (ticker == "BF.B" or ticker == "BRK.B"):
+            return "No Data"
         model = self._get_or_create_model(ticker)
         predictions = model.predict(ticker)
         return predictions
@@ -64,7 +76,8 @@ class BusinessLogic:
         return perf
 
     def do_retrain(self, ticker):
-        delete_model(ticker)
+        #delete_model(ticker)
         model = self._get_or_create_model(ticker)
-        perf = model.analyse_perf(ticker)
-        return perf
+        #perf = model.analyse_perf(ticker)
+        #return perf
+        return
