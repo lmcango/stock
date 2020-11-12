@@ -17,6 +17,15 @@ def get_stock_value(ticker):
 
     return f'{prediction}\n'
 
+@app.route('/train_all', methods=['GET'])
+def train_all():
+    bl = create_business_logic()
+    tickers = bl.get_all_tickers()
+    bl.train_alltickers()
+    #prediction = bl.do_predictions_for(ticker)
+
+    return f'training completed\n'
+
 @app.route('/perf/<ticker>', methods=['GET'])
 def perf(ticker):
     bl = create_business_logic()
