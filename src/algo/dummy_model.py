@@ -156,10 +156,10 @@ class Stock_model(BaseEstimator, TransformerMixin):
         predictions = self.lr.predict(df_features)
 
         if (predictions.flatten()[-1] >= Y.values[-2]):
-            return "BUY"
+            return "Buy"
             #return "BUY (today: %f, tomorrow: %f)" % (Y.values[-2], predictions.flatten()[-1])
         elif (predictions.flatten()[-1] < Y.values[-2]):
-            return "SELL"
+            return "Sell"
             #return "SELL (today: %f, tomorrow: %f)" % (Y.values[-2], predictions.flatten()[-1])
         #else:
             #return "NO ACTION (today: %f, tomorrow: %f)" % (Y.values[-2], predictions.flatten()[-1])
