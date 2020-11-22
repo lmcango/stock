@@ -49,7 +49,7 @@ class Stock_model(BaseEstimator, TransformerMixin):
 
         data = self._data_fetcher(X)
         if (data.empty):
-            print ("No Data")
+            print ("Ticker does not exist")
             return self
         train_data = data.head(int(0.80 * data.shape[0]))
         test_data = data.tail(int(0.20 * data.shape[0])+1)
@@ -155,7 +155,7 @@ class Stock_model(BaseEstimator, TransformerMixin):
     def predict(self, X, Y=None):
         data = self._data_fetcher(X, last=True)
         if (data.empty):
-            return "No Data"
+            return "Ticker Does Not Exist"
         df_features = create_features(data, addTomorrow=True)
         df_features, Y = create_X_Y(df_features)
         predictions = self.lr.predict(df_features)
